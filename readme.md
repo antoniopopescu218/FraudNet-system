@@ -34,8 +34,8 @@ graph TD
     S -.->|Async JDBC| DB
 
     %% Styling
-    style S fill:#f9f,stroke:#333,stroke-width:4px
-    style DB fill:#bbf,stroke:#333
+    style S fill:#d9f,stroke:#333,stroke-width:4px
+    style DB fill:#dbf,stroke:#333
 ```
 
 ## Core Features
