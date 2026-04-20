@@ -33,9 +33,9 @@ graph TD
     S -->|HttpClient| API
     S -.->|Async JDBC| DB
 
-    %% Styling
-    style S fill:#d9f,stroke:#333,stroke-width:4px
-    style DB fill:#dbf,stroke:#333
+    %% Styling - Dark Theme
+    style S fill:#1e293b,stroke:#94a3b8,stroke-width:4px,color:#ffffff
+    style DB fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#ffffff
 ```
 
 ## Core Features
