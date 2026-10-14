@@ -14,7 +14,8 @@ public class FraudServer {
     private static final int PORT = Protocol.Default_PORT;
 
     // ThreadPool recycles threads and prevents resource exhaustion
-    private static final ExecutorService pool = Executors.newFixedThreadPool(5);
+    private static final int POOL_SIZE = 5;
+    private static final ExecutorService pool = Executors.newFixedThreadPool(POOL_SIZE);
 
     public static void main(String[] args) throws IOException {
         System.out.println(">>> FraudNet HQ Initialized. Listening on port " + PORT);
