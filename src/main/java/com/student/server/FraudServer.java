@@ -1,6 +1,5 @@
 package com.student.server;
 
-import com.student.client.ClientHandler;
 import com.student.common.Protocol;
 
 import java.io.IOException;
@@ -24,6 +23,12 @@ public class FraudServer {
             System.err.println("FATAL: NEON_DB_URL environment variable not set. Shutdown.");
             System.exit(1); // KILL the server here because it's misconfigured
         }
+
+        // On Ctrl+C / SIGTERM: flush audit entries still waiting in the async queue
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println(">>> Shutting down: flushing pending audit writes...");
+            DatabaseService.shutdown();
+        }));
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             while (true) {
