@@ -43,7 +43,7 @@ graph TD
 * **Real-Time Currency Normalization:** Integrates with the ExchangeRate-API via Java's `HttpClient` to convert local currencies to EUR on the fly.
 * **Automated AML Detection:** Evaluates normalized transaction values against security thresholds (e.g., > €2000) to flag suspicious behavior.
 * **Cloud-Native Audit Ledger:** Handles asynchronous, fail-open transaction logging to a serverless PostgreSQL instance on Neon.tech.
-* **High-Concurrency Server:** Uses a Cached Thread Pool to manage simultaneous client connections without resource exhaustion.
+* **High-Concurrency Server:** Uses a Fixed Thread Pool to manage simultaneous client connections without resource exhaustion.
 
 ## Tech Stack
 * **Language:** Java SE 21+
@@ -56,7 +56,8 @@ graph TD
 
 ### Prerequisites
 * Java Development Kit (JDK) 21 or higher.
-* Outbound network access on TCP Port 5000.
+* Server: inbound TCP access on port 5000.
+* Client: outbound TCP access to the server on port 5000.
 * A valid Neon.tech PostgreSQL connection string.
 
 Note: Ensure you have set the NEON_DB_URL environment variable in your terminal before starting the server.
@@ -120,11 +121,11 @@ SERVER RESPONSE: ACK|FLAGGED;High Value (4950.50 EUR)
 ```
 src/main/java/com/student/
 ├── client/
-│   ├── FraudClient.java     # Terminal simulator and user IO
-│   └── ClientHandler.java   # Runnable task handling individual client lifecycles
+│   └──  FraudClient.java     # Terminal simulator and user IO
 ├── server/
 │   ├── FraudServer.java     # Main socket listener and thread pool manager
 │   ├── CurrencyService.java # External REST API integration logic
+│   ├── ClientHandler.java   # Runnable task handling individual client lifecycles
 │   └── DatabaseService.java # JDBC connection and SQL execution logic
 └── common/
     └── Protocol.java        # Shared constants and protocol definitions
