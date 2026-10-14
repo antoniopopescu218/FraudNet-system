@@ -31,7 +31,7 @@ graph TD
     C3 ---|Custom TCP| S
 
     S -->|HttpClient| API
-    S -.->|Async JDBC| DB
+    S -->|JDBC, async writer, fail-open| DB
 
     %% Styling - Dark Theme
     style S fill:#1e293b,stroke:#94a3b8,stroke-width:4px,color:#ffffff
@@ -42,7 +42,7 @@ graph TD
 * **Custom TCP Protocol:** Uses a lightweight, delimiter-based application protocol over raw TCP Sockets (Port 5000) to minimize overhead.
 * **Real-Time Currency Normalization:** Integrates with the ExchangeRate-API via Java's `HttpClient` to convert local currencies to EUR on the fly.
 * **Automated AML Detection:** Evaluates normalized transaction values against security thresholds (e.g., > €2000) to flag suspicious behavior.
-* **Cloud-Native Audit Ledger:** Handles asynchronous, fail-open transaction logging to a serverless PostgreSQL instance on Neon.tech.
+* **Asynchronous Audit Ledger:** Every transaction is handed to a single background writer thread (bounded queue of 1,000 entries) that persists it via JDBC to a serverless PostgreSQL instance on Neon.tech. Client threads never wait on the database; if it is slow or down, writes time out and are logged as failures (fail-open), and pending entries are flushed on shutdown.
 * **High-Concurrency Server:** Uses a Fixed Thread Pool to manage simultaneous client connections without resource exhaustion.
 
 ## Tech Stack
@@ -81,12 +81,17 @@ Expected Output: >>> FraudNet HQ Initialized. Listening on port 5000
 
 ### 3. Running the Client (Spoke)
 
-The client simulates a physical ATM or Point-of-Sale terminal. You can spin up multiple instances of this across different machines.
+The client simulates a physical ATM or Point-of-Sale terminal. You can spin up multiple instances of this across different machines. It only needs JDK 21 and the jar; no database or AWS access.
 
 ```bash
-# Launch the terminal interface
+# Launch the terminal interface: FraudClient [server-host] [port]
+java -cp target/fraudnet-lite-1.0-SNAPSHOT.jar com.student.client.FraudClient <server-ip>
+
+# Same machine as the server (host defaults to localhost, port to 5000)
 java -cp target/fraudnet-lite-1.0-SNAPSHOT.jar com.student.client.FraudClient
 ```
+
+The host can also be set with the `SERVER_IP` environment variable. If the server can't be reached within 5 seconds, the client reports the address it tried; check that the server is running and that port 5000 is open on both sides (e.g. the EC2 security group inbound rule).
 
 ## Usage
 
@@ -135,7 +140,7 @@ src/main/java/com/student/
 As a proof-of-concept, this system makes a few deliberate architectural trade-offs:    
 * **Security:** The custom TCP protocol currently transmits data in plaintext. A production version would require wrapping the sockets in SSL/TLS.
 * **Authentication:** Terminal identity relies on IP configuration rather than cryptographic handshakes (e.g., OAuth2 or mTLS).
-* **Data Consistency:** The database write is eventual/asynchronous. While great for performance and keeping the system available during database outages, a true banking system might require a two-phase commit strategy to guarantee strict ledger consistency.
+* **Data Consistency:** The audit write is asynchronous and happens after the client receives its response. This keeps the system fast and available during database outages, but an entry can be lost if the database stays down, the queue fills up, or the server crashes before flushing. A real banking ledger would persist before acknowledging, or use a durable queue / transactional outbox, to guarantee every transaction is recorded.
 
 ## License
 
