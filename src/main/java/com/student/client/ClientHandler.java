@@ -1,4 +1,4 @@
-package com.student.client;
+package com.student.server;
 
 import com.student.common.Protocol;
 import com.student.server.CurrencyService;
