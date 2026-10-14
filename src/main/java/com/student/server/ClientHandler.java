@@ -1,8 +1,6 @@
 package com.student.server;
 
 import com.student.common.Protocol;
-import com.student.server.CurrencyService;
-import com.student.server.DatabaseService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -75,8 +73,8 @@ public class ClientHandler implements Runnable {
             System.out.println(">>> ANALYZED: " + userId + " | " + amount + " " + currency + " -> " + status);
             out.println(Protocol.CMD_ACK + Protocol.JOINER + status + ";" + message);
 
-            // 4. SAVE TO CLOUD
-            dbService.saveTransaction(userId, amount, currency, status);
+            // 4. SAVE TO CLOUD (asynchronous, fail-open: queued for the background audit writer)
+            dbService.saveTransactionAsync(userId, amount, currency, status);
 
         } catch (Exception e) {
             out.println("ERR|Processing Failed");
