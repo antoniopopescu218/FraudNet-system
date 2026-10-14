@@ -14,5 +14,5 @@ public class Protocol {
     public static final String STATUS_FLAGGED = "FLAGGED";
 
     // Port Host
-    public static final int Default_PORT = 500;
+    public static final int Default_PORT = 5000;
 }
